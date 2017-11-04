@@ -1,0 +1,237 @@
+<?xml version="1.0" ?>
+<!DOCTYPE modification [
+<!ENTITY AdminFolder "admin">
+]>
+<modification>
+	<id>Size Chart Admin Module</id>
+	<author></author>
+
+	<file name="&AdminFolder;/controller/common/header.php">
+		<operation>
+			<search position="after"><![CDATA[
+			public function index() {
+			]]></search>
+			<add><![CDATA[
+			$data = array_merge(isset($data) ? $data : array(), $this->load->language('extension/sizechart'));
+                        if(isset($this->session->data['token'])){
+                            $data['size_chart_menu'] = $this->url->link('extension/sizechart', 'token=' . $this->session->data['token'], 'SSL');
+                        }
+			
+			]]></add>
+		</operation>
+	</file>
+
+
+		<file name="&AdminFolder;/controller/common/menu.php">
+			<operation>
+				<search position="after"><![CDATA[
+				$data['review'] = $this->url->link('catalog/review', 'token=' . $this->session->data['token'], 'SSL');
+				]]></search>
+				<add><![CDATA[
+				$data['size_chart_menu'] = $this->url->link('extension/sizechart', 'token=' . $this->session->data['token'], 'SSL');
+				]]></add>
+			</operation>
+		</file>
+
+        <!-- Add Menu in sidebar -->
+	<file name="&AdminFolder;/view/template/common/menu.tpl">
+		<operation>
+			<search position="after" offset="1"><![CDATA[
+			<?php echo $text_review; ?>
+			]]></search>
+			<add><![CDATA[
+				<li><a href="<?php echo $size_chart_menu; ?>">Size Chart</a></li>
+			]]></add>
+		</operation>
+	</file>
+
+        <!-- Call sizechart functions for add product-->
+	<file name="&AdminFolder;/controller/catalog/product.php">
+		<operation>
+			<search position="after"><![CDATA[
+			protected function getForm() {
+			]]></search>
+			<add><![CDATA[
+          $this->load->model('extension/sizechart');
+          $data = array_merge(isset($data) ? $data : array(), $this->load->language('extension/sizechart'));
+          $data['size_chart'] = $this->model_extension_sizechart->getListProduct();
+					if(isset($_GET['product_id']) && !empty($_GET['product_id'])){
+          	$data['size_chart_selected'] = $this->model_extension_sizechart->getChartData($_GET['product_id']);
+					}
+
+
+			]]></add>
+		</operation>
+	</file>
+
+        <!-- Add Option for Select Size Chart in Add/Edit Product Form -->
+	<file name="&AdminFolder;/view/template/catalog/product_form.tpl">
+		<operation>
+			<search position="after" offset="2"><![CDATA[
+			<?php echo $sort_order; ?>
+			]]></search>
+			<add><![CDATA[
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="input-model"><?php echo $heading_title_size_chart; ?></label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="size-chart">
+                                    <option><?php echo $text_select ?></option>
+                                    <?php
+                                        foreach ($size_chart as $size_chart){ ?>
+																					<option
+																						<?php if(isset($size_chart_selected) && !empty($size_chart_selected)){
+																								if($size_chart_selected["chart_id"] == $size_chart['chart_id']){
+																									{echo "selected";}
+																								}
+																							}
+																					  ?>
+																						value = "<?php echo $size_chart['chart_id'] ?>" > <?php echo $size_chart['chart_title'] ?>
+																					</option>
+																					<?php
+                                        }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+			]]></add>
+		</operation>
+	</file>
+
+        <!-- Call sizechart functions for edit product-->
+	<file name="&AdminFolder;/controller/catalog/product.php">
+		<operation>
+			<search position="after"><![CDATA[
+			public function edit() {
+			]]></search>
+			<add><![CDATA[
+                            $this->load->model('extension/sizechart');
+                            $data = array_merge(isset($data) ? $data : array(), $this->load->language('extension/sizechart'));
+                            $data['size_chart'] = $this->model_extension_sizechart->getListProduct();
+                            $data['size_chart_selected'] = $this->model_extension_sizechart->getChartData($_GET['product_id']);
+			]]></add>
+		</operation>
+
+                <operation>
+			<search position="after"><![CDATA[
+			$this->model_catalog_product->editProduct($this->request->get['product_id'], $this->request->post);
+			]]></search>
+			<add><![CDATA[
+                            $this->load->model('extension/sizechart');
+                            $this->model_extension_sizechart->editProductList($this->request->get['product_id'], $this->request->post['size-chart']);
+			]]></add>
+		</operation>
+
+	</file>
+
+
+        <!-- ADD sizechart functions for Add new product-->
+	<file name="&AdminFolder;/model/catalog/product.php">
+		<operation>
+			<search position="after"><![CDATA[
+			$product_id = $this->db->getLastId();
+			]]></search>
+			<add><![CDATA[
+                            $this->db->query("INSERT INTO " . DB_PREFIX . "sizechart_product SET `chart_id` = '" . $this->db->escape($data['size-chart']) . "', "
+                            . " `product_id` = '" . $product_id . "' ");
+			]]></add>
+		</operation>
+
+	</file>
+
+        <!-- ******************************************FRONT SIDE******************************************-->
+
+        <!-- ADD sizechart functions for Add new product-->
+	<file name="catalog/controller/product/product.php">
+		<operation>
+			<search position="after"><![CDATA[
+                            public function index() {
+			]]></search>
+			<add><![CDATA[
+                            $this->load->language('sizechart/sizechart');
+														$this->load->model('extension/sizechart');
+                            $data['text_title'] = $this->language->get('text_title');
+                            $data['get_size_chart_detail'] = $this->model_extension_sizechart->getSizeChart($_GET['product_id']);
+			]]></add>
+		</operation>
+	</file>
+
+        <!-- ADD View size chart function for user-->
+	<file name="catalog/view/theme/*/template/product/product.tpl">
+		<operation>
+			<search position="before"><![CDATA[
+			  <div id="product">
+			]]></search>
+			<add><![CDATA[
+							<?php
+								if(isset($get_size_chart_detail) && !empty($get_size_chart_detail)){
+							?>
+								<a href="#!" data-toggle="modal" data-target="#sizeChartModal"><?php echo $text_title; ?></a>
+							<?php } ?>
+			]]></add>
+		</operation>
+	</file>
+
+				<!-- ADD View size chart function for user-->
+			<file name="catalog/view/theme/*/template/common/header.tpl">
+			<operation>
+			<search position="before"><![CDATA[
+				</head>
+			]]></search>
+			<add><![CDATA[
+							<link href="catalog/view/theme/default/stylesheet/sizechart.css" rel="stylesheet">
+			]]></add>
+			</operation>
+			</file>
+
+
+        <file name="catalog/view/theme/*/template/product/product.tpl">
+		<operation>
+			<search position="befor"><![CDATA[
+			<?php echo $footer; ?>
+			]]></search>
+			<add><![CDATA[
+                <!-- Modal -->
+                <div id="sizeChartModal" class="modal fade" role="dialog">
+                  <div class="modal-dialog" style="overflow-y: initial !important">
+
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title"><?php echo $get_size_chart_detail['chart_title']; ?></h4>
+                      </div>
+                      <div class="modal-body" style="height: 550px;overflow-y: auto;">
+                        <?php echo $get_size_chart_detail['chart_description_top']; ?>
+												<!-- Table Header -->
+												<table style="sizechart">
+													<tr class="chart-header-bg">
+												<?php
+													foreach(unserialize($get_size_chart_detail['chart_headings']) as $chart_headings)
+															echo '<th class="chart-header">'.$chart_headings.'</th>';
+													 ?>
+												 </tr>
+												 <tr class="chart-data">
+												<!-- Table Chart Data -->
+												<?php
+												$i = 1;
+												foreach(unserialize($get_size_chart_detail['chart_data']) as $chart_data){
+													echo '<td>'.$chart_data.'</td>';
+													if($i %7 == 0){
+														echo '</tr><tr class="chart-data">';
+													}
+													$i++;
+												} ?>
+											</tr>
+											</table>
+												<br /><br />
+												<?php echo $get_size_chart_detail['chart_description_bottom']; ?>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+			]]></add>
+		</operation>
+	</file>
+</modification>
+

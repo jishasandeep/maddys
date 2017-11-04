@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Stock Status</id>
+	<version>1.0.0</version>
+	<vqmver>2.5.1</vqmver>
+	<author>T1ma</author>
+	
+	<file name="catalog/controller/product/product.php">
+		<operation>
+			<search position="before"><![CDATA[if ($product_info['quantity'] <= 0) {]]></search>
+			<add><![CDATA[$data['quantity'] = $product_info['quantity'];]]></add>
+		</operation>
+	</file>
+	<file name="catalog/view/theme/*/template/product/product.tpl">
+		<operation>
+			<search position="replace"><![CDATA[<?php echo $stock; ?>]]></search>
+			<add><![CDATA[<span style="display:inline-block;border-radius:50%;width:8px;height:8px;margin-right:-6px;"></span><span style="font-weight:bold;<?php echo ($quantity > 0) ? 'color:green' : 'color:red'; ?>"><?php echo $stock; ?></span>]]></add>
+		</operation>
+	</file>
+	
+	<file name="catalog/controller/product/category.php">
+		<operation>
+			<search position="after"><![CDATA[$this->load->language('product/category');]]></search>	
+			<add><![CDATA[
+				$this->load->language('product/product');
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[$data['products'][] = array(]]></search>	
+			<add><![CDATA[
+				if($result['quantity'] <= 0){
+					$result['stock'] = $result['stock_status'];
+				}
+				elseif($this->config->get('config_stock_display')){
+					$result['stock'] = $result['quantity'];
+				}
+				else{
+					$result['stock'] = $this->language->get('text_instock');
+				}
+			]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA[$data['products'][] = array(]]></search>
+			<add><![CDATA[
+				'quantity' => $result['quantity'],
+				'stock' => $result['stock'],
+			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/view/theme/*/template/product/category.tpl">
+		<operation>
+			<search position="before"><![CDATA[<?php if ($product['price']) { ?>]]></search>
+			<add><![CDATA[
+				<?php if ($product['custom'] && ( $product['custom'] == 'Y' || $product['custom'] == 'PreOrder') ) { ?>
+				       <span style="display:inline-block;border-radius:50%;width:8px;height:8px;margin-right:-6px;"></span><span style="font-weight:bold;<?php echo ($product['quantity'] > 0) ? 'color:green' : 'color:red'; ?>">Customizable</span>
+                	        <?php } else {?>
+					<div class="stock-status">
+						<span style="display:inline-block;border-radius:50%;width:8px;height:8px;margin-right:-6px;"></span><span style="font-weight:bold;<?php echo ($product['quantity'] > 0) ? 'color:green' : 'color:red'; ?>"><?php echo $product['stock']; ?></span>
+					</div>
+				 <?php } ?>
+			]]></add>
+		</operation>
+	</file>
+</modification>

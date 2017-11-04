@@ -1,0 +1,23 @@
+---------- Date: 2017-05-27 06:57:54 ~ IP : ::1 ----------
+REQUEST URI : /maddys/
+MOD DETAILS:
+   modFile   : C:\wamp\www\maddys\vqmod/xml/custom_size_chart.xml
+   id        : Size Chart Admin Module
+   version   : 
+   vqmver    : 
+   author    : 
+VQModObject::parseMods - Could not resolve path for [admin/view/template/common/menu.tpl] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [admin/view/template/catalog/product_form.tpl] (SKIPPED)
+
+MOD DETAILS:
+   modFile   : C:\wamp\www\maddys\vqmod/xml/Menu3rdLevel.xml
+   id        : Menu3rdLevel
+   version   : 0.9
+   vqmver    : 2.5.1
+   author    : etss
+
+File Name    : catalog/view/theme/default/template/common/header.tpl(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): <li><a href="<?php echo $child['href']; ?>"><?php echo $child['name']; ?></a></li>
+----------------------------------------------------------------------
+
+
